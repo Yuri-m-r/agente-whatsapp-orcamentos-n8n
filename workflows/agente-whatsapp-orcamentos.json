@@ -1,0 +1,2233 @@
+{
+  "name": "agente-whatsapp-orcamentos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "whatsapp-laser-ba179854",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -192,
+        0
+      ],
+      "id": "76d128e1-ae75-4b56-8d16-51efada5e8e9",
+      "name": "Webhook",
+      "webhookId": "9bddaba6-2107-439c-be0b-e973fc399af4",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "0XEDo7iAV2610nnl",
+          "name": "Header Auth account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b48eda42-5d66-46e1-87c1-e5627f3ef197",
+              "name": "telefone",
+              "value": "={{ ($json.body.data.key.remoteJid.endsWith('@lid') ? $json.body.data.key.remoteJidAlt : $json.body.data.key.remoteJid).split('@')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "e23c3c6e-e7b9-46a0-8747-4f6b75704109",
+              "name": "nome",
+              "value": "={{ $json.body.data.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "9edaa5b0-2362-411b-828a-1ed3824a9d10",
+              "name": "mensagem",
+              "value": "={{ $json.body.data.message.conversation || $json.body.data.message.extendedTextMessage?.text || $json.body.data.message.imageMessage?.caption || ($json.body.data.messageType === 'imageMessage' ? '[O cliente enviou uma imagem]' : '') }}",
+              "type": "string"
+            },
+            {
+              "id": "32d33fb8-8bad-4ddc-9352-f91f38db47b8",
+              "name": "tipo",
+              "value": "={{ $json.body.data.messageType }}",
+              "type": "string"
+            },
+            {
+              "id": "02b65a4f-88e0-472c-bc4f-770006b14d94",
+              "name": "fromMe",
+              "value": "={{ $json.body.data.key.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "548b8f33-e9bb-401f-a449-ed0de88e102a",
+              "name": "instancia",
+              "value": "={{ $json.body.instance }}",
+              "type": "string"
+            },
+            {
+              "id": "68962e36-5a17-4cf3-87b1-bfd5a04e48e3",
+              "name": "idMensagem",
+              "value": "={{ $json.body.data.key.id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e70e0292-8e25-4cd4-9581-c267488dc513",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Você é o assistente virtual de atendimento da LaserBA, especializada em gravação a laser. Você atende clientes pelo WhatsApp e sua função é coletar as informações necessárias para montar um orçamento.\n\nESTILO\n- Português do Brasil, tom simpático e profissional.\n- Mensagens curtas, como em uma conversa de WhatsApp.\n- Faça UMA pergunta por vez. Nunca envie uma lista de perguntas.\n- Nunca pergunte algo que o cliente já informou.\n- Se o cliente responder algo fora do que foi perguntado, responda brevemente e retome a pergunta.\n- Formatação do WhatsApp: use um único asterisco para negrito (*assim*). Nunca use dois asteriscos, listas com hífen em excesso ou títulos com #.\n- Nunca escreva a sequência \\n como texto. Para separar linhas, use quebras de linha reais na resposta.\n\nPRIMEIRA MENSAGEM\nSe não houver histórico de conversa (é o primeiro contato do cliente), sua resposta deve começar EXATAMENTE com esta saudação, sem alterar nenhuma palavra:\n\"Olá! 👋 Bem-vindo à LaserBA - Gravação a Laser. Vou te ajudar a montar o seu orçamento.\"\nNa mesma mensagem, logo após a saudação, siga para a próxima pergunta pendente. Nas mensagens seguintes, NÃO cumprimente de novo.\n\nEXTRAÇÃO\nEm TODA mensagem, extraia tudo que o cliente disse, mesmo o que você não perguntou, e registre em \"dados\". Depois pergunte apenas o próximo campo que falta.\nExemplo: \"Boa tarde, quero gravar 50 canetas\" → tipo_servico = gravacao, objeto = caneta, quantidade = 50. Sua resposta: a saudação padrão + \"Anotei: gravação em 50 canetas. O que você quer gravar: um texto, uma arte/logo ou texto com arte?\"\nSe não estiver claro se é gravação ou locação, pergunte.\n\nFLUXO\nSe ainda não souber o tipo de serviço, pergunte: gravação a laser ou locação de máquina.\n\nSE FOR GRAVAÇÃO, colete (pulando o que já souber):\na) Objeto que será gravado\nb) Quantidade de peças\nc) O que será gravado: texto, arte/logo ou texto com arte\nd) Se houver texto: qual é o texto exatamente\ne) Se houver texto: qual fonte (ver FONTE)\nf) Se houver arte: peça para o cliente enviar a imagem da arte (ver ARTE)\n\nSE FOR LOCAÇÃO, colete (pulando o que já souber):\na) Quantos dias de locação\nb) Quantas horas por dia\nc) Expectativa de quantidade de peças gravadas por dia\nd) Qual objeto será gravado (ex: canetas, canecas, chaveiros)\ne) Localização (cidade/bairro onde a máquina será usada)\nf) O que será gravado: texto, arte/logo ou texto com arte\ng) Se houver texto: qual é o texto exatamente\nh) Se houver texto: qual fonte (ver FONTE)\ni) Se houver arte: peça para o cliente enviar a imagem da arte (ver ARTE)\n\nFONTE\n- Depois que o cliente informar o texto, pergunte qual fonte ele prefere. Nessa mensagem, marque enviar_catalogo = true, pois o sistema envia a imagem do catálogo junto com o seu texto. Não diga que vai \"enviar em seguida\": a imagem vai junto. Exemplo: \"Qual fonte você prefere para o texto? Me diga o número ou o nome da fonte do catálogo. Se quiser outra, é só me dizer o nome.\"\n- enviar_catalogo é true APENAS nessa mensagem. Em todas as outras é false. Se o cliente pedir para ver o catálogo de novo, marque true outra vez.\n- O cliente pode responder com o número ou com o nome. Grave sempre o NOME em dados.fonte. Tabela:\n01 Arial, 02 Helvetica, 03 Times New Roman, 04 Georgia, 05 Verdana, 06 Trebuchet MS, 07 Tahoma, 08 Montserrat, 09 Poppins, 10 Century Gothic, 11 Calibri, 12 Optima, 13 Garamond, 14 Baskerville, 15 Bookman Old Style, 16 Courier New, 17 Brush Script MT, 18 Pacifico, 19 Great Vibes, 20 Bebas Neue.\n- Se o cliente pedir uma fonte fora da lista, aceite e grave o nome que ele disse.\n\nARTE\n- Só peça a imagem da arte se tipo_conteudo for \"arte\" ou \"texto_com_arte\".\n- Se tipo_conteudo for \"texto\", NUNCA peça arte, logo ou imagem. Nesse caso arte_recebida fica false e deve ser ignorado: não é um campo pendente.\n- Se o cliente disser \"um texto\", \"só texto\" ou \"apenas texto\", registre tipo_conteudo = \"texto\" e siga para a próxima pergunta, sem falar de arte.\n- Quando chegar a mensagem \"[O cliente enviou uma imagem]\", marque dados.arte_recebida = true e confirme o recebimento.\n- Se o cliente disser que vai mandar a arte depois, siga com o resto e lembre dele antes do resumo.\n\nREGRAS\n- NUNCA informe preços, prazos ou valores. O orçamento é enviado depois, em planilha.\n- Não invente informações sobre a empresa.\n- Se o cliente pedir algo fora do escopo (reclamação, assunto não relacionado), diga que um atendente humano vai continuar o atendimento.\n- Quando tiver TODAS as informações, faça um resumo do pedido, peça para o cliente confirmar e diga que o orçamento será enviado em instantes.\n\nFORMATO DA RESPOSTA\nSua resposta é sempre um JSON com quatro campos:\n- resposta: a mensagem que será enviada ao cliente\n- dados: tudo que o cliente já informou até agora. Campos não informados ficam \"\" (texto vazio) e arte_recebida fica false. Em tipo_servico use apenas \"gravacao\" ou \"locacao\". Em tipo_conteudo use apenas \"texto\", \"arte\" ou \"texto_com_arte\".\n- enviar_catalogo: conforme a seção FONTE\n- coleta_completa: true SOMENTE quando (1) todos os campos do fluxo escolhido estiverem preenchidos E (2) você já enviou o resumo E (3) o cliente confirmou que está correto. Em qualquer outro caso, false.\n\nSe o cliente corrigir algo depois do resumo, atualize os dados, envie um novo resumo e mantenha coleta_completa false até ele confirmar de novo.\n\nNome do cliente: {{ $json.nome }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        800,
+        16
+      ],
+      "id": "617ad4ca-9ab1-4131-93cd-53a90baa7ce2",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1.1,
+      "position": [
+        720,
+        208
+      ],
+      "id": "05143410-9449-4591-84b4-644f311cc664",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mnWDQ7Bxak3YGJxF",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"resposta\": \"texto que será enviado ao cliente\",\n  \"coleta_completa\": false,\n  \"enviar_catalogo\": false,\n  \"dados\": {\n    \"tipo_servico\": \"gravacao\",\n    \"objeto\": \"caneta\",\n    \"quantidade\": \"50\",\n    \"tipo_conteudo\": \"texto\",\n    \"texto\": \"Maria e João\",\n    \"fonte\": \"Arial\",\n    \"arte_recebida\": false,\n    \"dias_locacao\": \"\",\n    \"horas_por_dia\": \"\",\n    \"pecas_por_dia\": \"\",\n    \"localizacao\": \"\"\n  }\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        944,
+        240
+      ],
+      "id": "36a8713e-46c6-41ff-8ef8-f1db114ebdf2",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ea03917e-c9a2-4329-8078-051eee8e53c0",
+              "leftValue": "={{\n  $json.fromMe === false &&\n  (\n    $json.tipo === 'conversation' ||\n    $json.tipo === 'extendedTextMessage' ||\n    $json.tipo === 'imageMessage'\n  )\n}}",
+              "rightValue": "={{ $json.Tipo }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {
+          "ignoreCase": false
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        384,
+        0
+      ],
+      "id": "b18ff6e9-f5a9-459b-80e1-a81c6c91837f",
+      "name": "Identificar origem da mensagem"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "ea3288a7-86fd-4d77-ac8b-9c4564597303",
+              "leftValue": "={{ $json.output.enviar_catalogo }}",
+              "rightValue": false,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "25568cee-c29a-4904-87e7-b4aba7b7a9ea",
+      "name": "Verifcar envio de catalogo"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION{{ $('Edit Fields').item.json.instancia }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: $('Edit Fields').item.json.telefone,\n  mediatype: \"image\",\n  mimetype: \"image/png\",\n  caption: String($json.output.resposta).replace(/\\\\n/g, '\\n'),\n  media: \"https://kyqlowinjibcqznbhyhr.supabase.co/storage/v1/object/public/imagens-LaserBA/Catalogo%20de%20fontes.png\",\n  fileName: \"Catalogo_de_fontes.png\",\n  delay: 1200\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1216,
+        -128
+      ],
+      "id": "c63fa1cc-d5e2-4bbd-a65b-a074e8d9ddd6",
+      "name": "Enviar catalogo",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e027d101-56d4-4558-ab33-0fa4844d8ee9",
+              "leftValue": "={{ $('AI Agent').item.json.output.coleta_completa }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1376,
+        16
+      ],
+      "id": "a4b3b212-737b-4236-b3e2-383d36e0cce6",
+      "name": "Verificar coleta de info completa"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION{{ $('Edit Fields').item.json.instancia }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: $('Edit Fields').item.json.telefone,\n  text: String($json.output.resposta).replace(/\\\\n/g, '\\n'),\n  delay: 1200\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1216,
+        176
+      ],
+      "id": "d19b044e-153b-4166-aa14-e0a0622eaf30",
+      "name": "Enviar mensagem",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "744c436f-0a32-49d1-aa1b-350210bdc300",
+              "name": "dados",
+              "value": "={{ $('AI Agent').item.json.output.dados }}",
+              "type": "object"
+            },
+            {
+              "id": "32cb5871-0d88-4c8a-84bd-0a9d31ce0912",
+              "name": "telefone",
+              "value": "={{ $('Edit Fields').item.json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "8079aeed-0a2f-4611-b574-fbf0ba48b040",
+              "name": "nome",
+              "value": "={{ $('Edit Fields').item.json.nome }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1568,
+        16
+      ],
+      "id": "da6ecedf-1737-4c4e-b80f-5459737f44c7",
+      "name": "Dados da coleta"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 1024182149,
+          "mode": "list",
+          "cachedResultName": "Preços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        -144
+      ],
+      "id": "208279fb-fcb0-4802-9085-529953842d5e",
+      "name": "Ler preços de gravação",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2059289738,
+          "mode": "list",
+          "cachedResultName": "Locação",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "options": {
+          "outputFormatting": {
+            "values": {
+              "general": "UNFORMATTED_VALUE",
+              "date": "FORMATTED_STRING"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1920,
+        144
+      ],
+      "id": "9fb737f2-de5c-4965-8281-21ed6c2b27ee",
+      "name": "Ler preços locação",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.dados.tipo_servico }}",
+                    "rightValue": "gravacao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "bef74812-fcfa-4ba6-a9a6-9ce6e0bfca39"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "5d9fa0bb-72df-44de-b23f-40be41df3764",
+                    "leftValue": "={{ $json.dados.tipo_servico }}",
+                    "rightValue": "locacao",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1728,
+        16
+      ],
+      "id": "4aa0afa7-bd30-4690-817f-5bfdcf41ba10",
+      "name": "Gravação ou locação"
+    },
+    {
+      "parameters": {
+        "jsCode": "\n\nconst coleta = $('Dados da coleta').first().json;\nconst dados = coleta.dados;\nconst tipo = dados.tipo_servico;\n\nconst calc = tipo === 'gravacao'\n  ? $('Calcular gravação').first().json\n  : $('Calcular locação').first().json;\n\nif (calc.erro) {\n  return [{ json: { erro: true, motivo: calc.motivo, telefone: coleta.telefone, cliente: coleta.nome } }];\n}\n\n  const os = $now.setZone('America/Bahia').toFormat('ddHHmm');\n\nlet conteudo = { texto: 'texto', arte: 'arte', texto_com_arte: 'texto e arte' }[dados.tipo_conteudo] || dados.tipo_conteudo;\nif (dados.texto) conteudo += ` \"${dados.texto}\"`;\nif (dados.fonte) conteudo += `, fonte ${dados.fonte}`;\n\nconst base = {\n  erro: false,\n  tipo,\n  telefone: coleta.telefone,\n  os,\n  cliente: coleta.nome,\n  periodo: '',\n  quantidade: '', valor_unitario: '',\n  dias: '', horas_dia: '', pecas_dia: '',\n  distancia_km: '', valor_deslocamento: '', valor_diaria: '',\n  valor_total: calc.valor_total,\n  distancia_pendente: false\n};\n\nif (tipo === 'gravacao') {\n  return [{ json: {\n    ...base,\n    referencia: `Gravação a laser - ${dados.objeto}`,\n    descricao: `Gravação a laser | Objeto: ${dados.objeto} | Conteúdo: ${conteudo}`,\n    quantidade: calc.quantidade,\n    valor_unitario: calc.valor_unitario\n  } }];\n}\n\nreturn [{ json: {\n  ...base,\n  referencia: `Locação de máquina - ${dados.localizacao}`,\n  descricao: `Locação de máquina | Objeto: ${dados.objeto} | Conteúdo: ${conteudo} | Local: ${dados.localizacao}`,\n  dias: calc.dias,\n  horas_dia: calc.horas_por_dia,\n  pecas_dia: parseInt(String(dados.pecas_por_dia).replace(/\\D/g, ''), 10) || '',\n  distancia_km: calc.distancia_pendente ? '' : calc.km_total,\n  valor_deslocamento: calc.valor_deslocamento,\n  valor_diaria: calc.valor_diaria,\n  distancia_pendente: calc.distancia_pendente\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2288,
+        0
+      ],
+      "id": "8e21e35d-0ce5-49b0-a271-7c102e0dd06b",
+      "name": "Montar dados"
+    },
+    {
+      "parameters": {
+        "operation": "copy",
+        "fileId": {
+          "__rl": true,
+          "value": "1snINp8H9_M39AxQEQXprjizjH93mhDa76_CPeV5_lNk",
+          "mode": "id"
+        },
+        "name": "=Orçamento OS {{ $json.os }} - {{ $json.cliente }}",
+        "sameFolder": false,
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/folders/14IFer6AABvufduWeesm0VfvpxAdURnka",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2448,
+        -176
+      ],
+      "id": "f96c4185-6ef1-42cd-8a14-553649bb69f6",
+      "name": "Copy file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kl8Ydf8IcrqJWS51",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const dados = $('Dados da coleta').first().json.dados;\nconst complexidade = 'normal'; \n\nconst tabela = $input.all()\n  .map(i => i.json)\n  .map(l => ({ ...l, a_partir_de: Number(l.a_partir_de) }))\n  .sort((a, b) => a.a_partir_de - b.a_partir_de);\n\nconst qtd = parseInt(String(dados.quantidade).replace(/\\D/g, ''), 10);\n\nlet coluna;\nif (dados.tipo_conteudo === 'texto') {\n  coluna = 'texto';\n} else if (dados.tipo_conteudo === 'arte') {\n  coluna = complexidade === 'complexa' ? 'arte_complexa' : 'arte_normal';\n} else {\n  coluna = complexidade === 'complexa' ? 'arte_complexa_texto' : 'arte_normal_texto';\n}\n\nconst faixa = [...tabela].reverse().find(l => qtd >= l.a_partir_de) || tabela[0];\nconst valorUnitario = Number(faixa[coluna]);\n\nif (!qtd || isNaN(valorUnitario)) {\n  return [{ json: { erro: true, motivo: 'Não consegui calcular: quantidade ou preço inválido', quantidade: dados.quantidade } }];\n}\n\nreturn [{ json: {\n  erro: false,\n  quantidade: qtd,\n  faixa: faixa.a_partir_de,\n  coluna,\n  valor_unitario: valorUnitario,\n  valor_total: qtd * valorUnitario\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        -144
+      ],
+      "id": "36669bfe-2988-42ef-93d1-913bf7e57a68",
+      "name": "Calcular gravação"
+    },
+    {
+      "parameters": {
+        "jsCode": "const dados = $('Dados da coleta').first().json.dados;\nconst preco = $input.first().json;\n\nconst extrairNumero = (texto) => {\n  const m = String(texto).replace(',', '.').match(/\\d+(\\.\\d+)?/);\n  return m ? parseFloat(m[0]) : NaN;\n};\n\nconst dias = extrairNumero(dados.dias_locacao);\nconst horas = extrairNumero(dados.horas_por_dia);\nconst valorHora = Number(preco.valor_hora);\nconst valorKm = Number(preco.valor_km);\n\nconst distanciaIdaKm  = 10;\n\nif (isNaN(dias) || isNaN(horas) || isNaN(valorHora) || isNaN(valorKm)) {\n  return [{ json: {\n    erro: true,\n    motivo: 'Não consegui calcular a locação: dias, horas ou preços inválidos',\n    dias_locacao: dados.dias_locacao,\n    horas_por_dia: dados.horas_por_dia\n  } }];\n}\n\nconst distanciaPendente = distanciaIdaKm === null;\nconst kmPorDia = distanciaPendente ? 0 : distanciaIdaKm * 2;\nconst kmTotal = kmPorDia * dias;          \nconst valorDeslocamento = kmTotal * valorKm;\n\nconst valorDiaria = horas * valorHora;\nconst subtotal = dias * valorDiaria;\n\nreturn [{ json: {\n  erro: false,\n  dias,\n  horas_por_dia: horas,\n  valor_hora: valorHora,\n  valor_diaria: valorDiaria,\n  subtotal_locacao: subtotal,\n  distancia_pendente: distanciaPendente,\n  km_por_dia: kmPorDia,\n  km_total: kmTotal,\n  valor_deslocamento: valorDeslocamento,\n  valor_total: subtotal + valorDeslocamento\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2096,
+        144
+      ],
+      "id": "215ca858-a834-4f12-958a-d69bb71a4392",
+      "name": "Calcular locação"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Dados",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "os": "={{ $('Montar dados').item.json.os }}",
+            "cliente": "={{ $('Montar dados').item.json.cliente }}",
+            "referencia": "={{ $('Montar dados').item.json.referencia }}",
+            "descricao": "={{ $('Montar dados').item.json.descricao }}",
+            "quantidade": "={{ $('Montar dados').item.json.quantidade }}",
+            "valor_unitario": "={{ $('Montar dados').item.json.valor_unitario }}",
+            "periodo": "={{ $('Montar dados').item.json.periodo }}",
+            "dias": "={{ $('Montar dados').item.json.dias }}",
+            "horas_dia": "={{ $('Montar dados').item.json.horas_dia }}",
+            "pecas_dia": "={{ $('Montar dados').item.json.pecas_dia }}",
+            "distancia_km": "={{ $('Montar dados').item.json.distancia_km }}",
+            "valor_deslocamento": "={{ $('Montar dados').item.json.valor_deslocamento }}",
+            "valor_diaria": "={{ $('Montar dados').item.json.valor_diaria }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "os",
+              "displayName": "os",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "cliente",
+              "displayName": "cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "referencia",
+              "displayName": "referencia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "descricao",
+              "displayName": "descricao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "quantidade",
+              "displayName": "quantidade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valor_unitario",
+              "displayName": "valor_unitario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "periodo",
+              "displayName": "periodo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "dias",
+              "displayName": "dias",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "horas_dia",
+              "displayName": "horas_dia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pecas_dia",
+              "displayName": "pecas_dia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "distancia_km",
+              "displayName": "distancia_km",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valor_deslocamento",
+              "displayName": "valor_deslocamento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "valor_diaria",
+              "displayName": "valor_diaria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_pdf",
+              "displayName": "data_pdf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2608,
+        96
+      ],
+      "id": "3bcd723e-40f1-4703-8094-48f31c24c3c1",
+      "name": "Montar orçamento",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.idMensagem }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        192,
+        0
+      ],
+      "id": "27e5d7ff-583e-4533-878f-efed01585418",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Edit Fields').item.json.telefone }}",
+        "contextWindowLength": 12
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryPostgresChat",
+      "typeVersion": 1.4,
+      "position": [
+        832,
+        336
+      ],
+      "id": "199abb73-acba-4236-869c-0650f03a99f2",
+      "name": "Postgres Chat Memory",
+      "credentials": {
+        "postgres": {
+          "id": "JMQnlGxg2LwLZ3BA",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2768,
+        -160
+      ],
+      "id": "0028e639-94fa-458f-b0eb-514b31f5d9a2",
+      "name": "Wait",
+      "webhookId": "ad5abc5c-862d-4009-aa5f-bebded526789"
+    },
+    {
+      "parameters": {
+        "name": "=Orçamento OS {{ $('Montar dados').first().json.os }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "https://drive.google.com/drive/u/0/folders/1e36OW_YdMWsFSILBj5SrTOHzIyuIuyok",
+          "mode": "url"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3360,
+        -176
+      ],
+      "id": "7b051b4f-c43b-4414-9be4-0e43582b5ccc",
+      "name": "Upload PDF",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kl8Ydf8IcrqJWS51",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: \"NUMERO_DO_SOCIO\",\n  mediatype: \"document\",\n  mimetype: \"application/pdf\",\n  fileName: \"Orçamento OS \" + $('Montar dados').first().json.os + \".pdf\",\n  caption: \"Orçamento OS \" + $('Montar dados').first().json.os + \" – \" + $('Montar dados').first().json.cliente + \"\\n\" + $('Montar dados').first().json.descricao + \"\\nValor: R$ \" + $('Montar dados').first().json.valor_total + \"\\n\\nResponda: aprovar \" + $('Montar dados').first().json.os + \" ou cancelar \" + $('Montar dados').first().json.os,\n  media: $json.data\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3936,
+        -160
+      ],
+      "id": "eb8720e2-11db-4948-a5f7-b46330824a8d",
+      "name": "Conferir orçamento",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const msg = ($json.mensagem || '').trim();\nconst m = msg.match(/^(aprovar|cancelar)\\s+(\\S+)/i);\nreturn [{ json: {\n  valido: !!m,\n  acao: m ? m[1].toLowerCase() : '',\n  os: m ? m[2] : ''\n} }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        688,
+        -320
+      ],
+      "id": "a385825f-a999-43ff-aadb-7430f3831371",
+      "name": "Interpretar comando"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "544696dc-bcc9-494d-8711-73b6ccc9f5f6",
+              "leftValue": "={{ String($json.telefone).replace(/\\D/g, '').slice(-8) }}",
+              "rightValue": "NUMERO_DO_SOCIO",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        576,
+        0
+      ],
+      "id": "f62237ee-1613-4395-ab01-f486a0fb98f2",
+      "name": "Verificar numero socios"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: String($('Edit Fields').first().json.telefone).replace(/\\D/g, ''),\n  text: \"Não entendi o comando 🤔\\n\\nUse:\\n• aprovar NUMERO_DA_OS\\n• cancelar NUMERO_DA_OS\\n\\nExemplo: aprovar 123456\"\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1040,
+        -208
+      ],
+      "id": "cfa060bc-78a5-47c3-87c3-f820bfb5d56d",
+      "name": "Reenviar mensagem aprovação",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "3e296d54-47aa-4a44-8a3d-153b5a69932e",
+              "leftValue": "={{ $json.valido }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        848,
+        -320
+      ],
+      "id": "15913f58-b720-437b-b3c3-0d99044dd4f3",
+      "name": "Comando valido"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 268215252,
+          "mode": "list",
+          "cachedResultName": "Serviços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "OS",
+              "lookupValue": "={{ $json.os }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1072,
+        -416
+      ],
+      "id": "412af793-a7df-4b70-8a74-11f789449404",
+      "name": "Buscar OS",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "7541390b-e2c3-4ff4-8b50-07c603025d8e",
+              "leftValue": "={{ $json.OS }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "9887918f-f436-4e25-a07c-5f3f821cab5d",
+              "leftValue": "={{ $json.STATUS }}",
+              "rightValue": "Aguardando aprovação",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1296,
+        -416
+      ],
+      "id": "1189e692-90e0-464e-b1b3-abcd200c62f4",
+      "name": "Pode processar"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: String($('Edit Fields').first().json.telefone).replace(/\\D/g, ''),\n  text: \"OS não encontrada ou já processada. Confira o número e o status na aba Serviços.\"\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1472,
+        -208
+      ],
+      "id": "8d81f4bc-9de4-49a7-b690-eb158163d10d",
+      "name": "Avisar OS invalida",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "af821d81-139a-4833-bd5d-202a2ad63341",
+              "leftValue": "={{ $('Interpretar comando').first().json.acao }}",
+              "rightValue": "aprovar",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1488,
+        -496
+      ],
+      "id": "c98b164c-8c7f-4385-8511-01b392946955",
+      "name": "Aprovar ou cancelar?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION{{ encodeURIComponent($('Edit Fields').first().json.instancia) }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: String($('Buscar OS').first().json.TELEFONE || '').replace(/\\D/g, ''),\n  mediatype: \"document\",\n  mimetype: \"application/pdf\",\n  fileName: \"Orçamento OS \" + $('Buscar OS').first().json.OS + \".pdf\",\n  caption: \"Olá! Segue o seu orçamento da LaserBA. Qualquer dúvida é só chamar 😊\",\n  media: $json.data\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2112,
+        -512
+      ],
+      "id": "d063c2ec-5f03-46d8-8671-3e72c786a519",
+      "name": "Enviar orçamento ao cliente",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  number: String($('Edit Fields').first().json.telefone).replace(/\\D/g, ''),\n  text: \"✅ OS \" + $('Interpretar comando').first().json.os + \" enviada ao cliente.\"\n}) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2480,
+        -512
+      ],
+      "id": "ee679e2f-0091-4b02-bee1-39fafdc4743c",
+      "name": "Confirmação de envio de orçamento",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 268215252,
+          "mode": "list",
+          "cachedResultName": "Serviços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "OS": "={{ $('Interpretar comando').first().json.os }}",
+            "STATUS": "Cancelado"
+          },
+          "matchingColumns": [
+            "OS"
+          ],
+          "schema": [
+            {
+              "id": "OS",
+              "displayName": "OS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CLIENTE",
+              "displayName": "CLIENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONE",
+              "displayName": "TELEFONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIÇÃO",
+              "displayName": "DESCRIÇÃO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VALOR",
+              "displayName": "VALOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PLANILHA",
+              "displayName": "ID_PLANILHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PDF",
+              "displayName": "ID_PDF",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1728,
+        -336
+      ],
+      "id": "5ac2a1ac-7ce8-41fd-9eb6-0c0c5dc5e4fe",
+      "name": "Orçamento cancelado",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "SUA-EVOLUTION",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "=\"❌ OS \" + $('Interpretar comando').first().json.os + \" cancelada.\"",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1952,
+        -336
+      ],
+      "id": "c6c99b84-6cfb-4c30-b778-a20581a4580b",
+      "name": "Confirmação de cancelamento de orçamento",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "SUA_APIKEY",
+          "name": "SUA_APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 268215252,
+          "mode": "list",
+          "cachedResultName": "Serviços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "OS": "={{ $('Interpretar comando').first().json.os }}",
+            "STATUS": "Enviado"
+          },
+          "matchingColumns": [
+            "OS"
+          ],
+          "schema": [
+            {
+              "id": "OS",
+              "displayName": "OS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "CLIENTE",
+              "displayName": "CLIENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONE",
+              "displayName": "TELEFONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIÇÃO",
+              "displayName": "DESCRIÇÃO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VALOR",
+              "displayName": "VALOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PLANILHA",
+              "displayName": "ID_PLANILHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PDF",
+              "displayName": "ID_PDF",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2288,
+        -512
+      ],
+      "id": "3b8b7e86-9424-4d52-ac6d-c71a8860a2b0",
+      "name": "Atualizar orçamento enviado",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Buscar OS').first().json.ID_PDF }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1728,
+        -512
+      ],
+      "id": "2ea8214b-58cd-42d2-973b-8f8507f390b5",
+      "name": "Download orçamento PDF 1",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kl8Ydf8IcrqJWS51",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Upload PDF').first().json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        3664,
+        -160
+      ],
+      "id": "45ac24d7-8e24-4b77-b60d-9c73f0c5e1db",
+      "name": "Download orçamento PDF",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "kl8Ydf8IcrqJWS51",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        3792,
+        112
+      ],
+      "id": "5504994e-351f-4bd7-9761-06451a10796f",
+      "name": "Converter PDF"
+    },
+    {
+      "parameters": {
+        "operation": "binaryToPropery",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1920,
+        -512
+      ],
+      "id": "4ae2f14e-6cec-475e-9066-bb426986503e",
+      "name": "Converter PDF 1"
+    },
+    {
+      "parameters": {
+        "url": "=https://sheets.googleapis.com/v4/spreadsheets/{{ $('Copy file').last().json.id }}?fields=sheets.properties(sheetId,title)",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2896,
+        96
+      ],
+      "id": "d7afaf12-ebbf-4aa4-a150-1f983fb58979",
+      "name": "Salvar gid aba",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const tipo = $('Montar dados').first().json.tipo;\nconst nome = tipo === 'gravacao' ? 'Gravação' : 'Locação';\nconst aba = $input.first().json.sheets.find(s => s.properties.title === nome);\nif (!aba) throw new Error(`Aba \"${nome}\" não encontrada na cópia`);\nreturn [{ json: { gid_aba: aba.properties.sheetId } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3072,
+        -176
+      ],
+      "id": "d2ba4bb8-5512-448c-8b99-46ecc1a43405",
+      "name": "Formatar dados"
+    },
+    {
+      "parameters": {
+        "url": "=https://docs.google.com/spreadsheets/d/{{ $('Copy file').last().json.id }}/export?format=pdf&gid={{ $('Formatar dados').first().json.gid_aba }}&size=A4&portrait=true&fitw=true&gridlines=false",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "googleSheetsOAuth2Api",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3216,
+        96
+      ],
+      "id": "fe7d92bb-b97f-4a66-83c7-3bc2b0e0ccc6",
+      "name": "Resgatar PDF do sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "mode": "list",
+          "cachedResultName": "Orçamento padrão",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 268215252,
+          "mode": "list",
+          "cachedResultName": "Serviços",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit#gid=GID_DA_PLANILHA"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "OS": "={{ $('Montar dados').first().json.os }}",
+            "CLIENTE": "={{ $('Montar dados').first().json.cliente }}",
+            "TELEFONE": "={{ $('Montar dados').first().json.telefone }}",
+            "DESCRIÇÃO": "={{ $('Montar dados').first().json.descricao }}",
+            "VALOR": "={{ $('Montar dados').first().json.valor_total }}",
+            "ID_PLANILHA": "={{ $('Copy file').last().json.id }}",
+            "ID_PDF": "={{ $json.id }}",
+            "STATUS": "Aguardando aprovação"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "OS",
+              "displayName": "OS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "CLIENTE",
+              "displayName": "CLIENTE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "TELEFONE",
+              "displayName": "TELEFONE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "DESCRIÇÃO",
+              "displayName": "DESCRIÇÃO",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "VALOR",
+              "displayName": "VALOR",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PLANILHA",
+              "displayName": "ID_PLANILHA",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID_PDF",
+              "displayName": "ID_PDF",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "STATUS",
+              "displayName": "STATUS",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3520,
+        96
+      ],
+      "id": "e48e4b72-79c8-47dd-ae5e-addf82bf90ab",
+      "name": "Salvar OS",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "z1JEXHTCh8C0tmiY",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "Dados da coleta": [
+      {
+        "json": {
+          "dados": {
+            "tipo_servico": "",
+            "objeto": "",
+            "quantidade": "",
+            "tipo_conteudo": "",
+            "texto": "",
+            "fonte": "",
+            "arte_recebida": false,
+            "dias_locacao": "",
+            "horas_por_dia": "",
+            "pecas_por_dia": "",
+            "localizacao": ""
+          },
+          "telefone": "",
+          "nome": " "
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Verifcar envio de catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Identificar origem da mensagem": {
+      "main": [
+        [
+          {
+            "node": "Verificar numero socios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifcar envio de catalogo": {
+      "main": [
+        [
+          {
+            "node": "Enviar catalogo",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Enviar mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar coleta de info completa": {
+      "main": [
+        [
+          {
+            "node": "Dados da coleta",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Enviar catalogo": {
+      "main": [
+        [
+          {
+            "node": "Verificar coleta de info completa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar mensagem": {
+      "main": [
+        [
+          {
+            "node": "Verificar coleta de info completa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados da coleta": {
+      "main": [
+        [
+          {
+            "node": "Gravação ou locação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler preços de gravação": {
+      "main": [
+        [
+          {
+            "node": "Calcular gravação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler preços locação": {
+      "main": [
+        [
+          {
+            "node": "Calcular locação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gravação ou locação": {
+      "main": [
+        [
+          {
+            "node": "Ler preços de gravação",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ler preços locação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar dados": {
+      "main": [
+        [
+          {
+            "node": "Copy file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copy file": {
+      "main": [
+        [
+          {
+            "node": "Montar orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular gravação": {
+      "main": [
+        [
+          {
+            "node": "Montar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcular locação": {
+      "main": [
+        [
+          {
+            "node": "Montar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Identificar origem da mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Postgres Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar orçamento": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Salvar gid aba",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload PDF": {
+      "main": [
+        [
+          {
+            "node": "Salvar OS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interpretar comando": {
+      "main": [
+        [
+          {
+            "node": "Comando valido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verificar numero socios": {
+      "main": [
+        [
+          {
+            "node": "Interpretar comando",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reenviar mensagem aprovação": {
+      "main": [
+        []
+      ]
+    },
+    "Comando valido": {
+      "main": [
+        [
+          {
+            "node": "Buscar OS",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reenviar mensagem aprovação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar OS": {
+      "main": [
+        [
+          {
+            "node": "Pode processar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pode processar": {
+      "main": [
+        [
+          {
+            "node": "Aprovar ou cancelar?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Avisar OS invalida",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aprovar ou cancelar?": {
+      "main": [
+        [
+          {
+            "node": "Download orçamento PDF 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Orçamento cancelado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enviar orçamento ao cliente": {
+      "main": [
+        [
+          {
+            "node": "Atualizar orçamento enviado",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orçamento cancelado": {
+      "main": [
+        [
+          {
+            "node": "Confirmação de cancelamento de orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar orçamento enviado": {
+      "main": [
+        [
+          {
+            "node": "Confirmação de envio de orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download orçamento PDF 1": {
+      "main": [
+        [
+          {
+            "node": "Converter PDF 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download orçamento PDF": {
+      "main": [
+        [
+          {
+            "node": "Converter PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converter PDF": {
+      "main": [
+        [
+          {
+            "node": "Conferir orçamento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Converter PDF 1": {
+      "main": [
+        [
+          {
+            "node": "Enviar orçamento ao cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar gid aba": {
+      "main": [
+        [
+          {
+            "node": "Formatar dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Formatar dados": {
+      "main": [
+        [
+          {
+            "node": "Resgatar PDF do sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resgatar PDF do sheets": {
+      "main": [
+        [
+          {
+            "node": "Upload PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar OS": {
+      "main": [
+        [
+          {
+            "node": "Download orçamento PDF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "7c2fb721-bde7-4265-b286-4853623a4bb6",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e991cba3c1c600f616dd98ce0e8203c32f150c18e5b5fe35080e4969f016c8c8"
+  },
+  "nodeGroups": [],
+  "id": "gbRHhdO8axy3IrE6",
+  "tags": []
+}

@@ -1,0 +1,101 @@
+# Estrutura da planilha
+
+Modelo único, copiado no Google Drive a cada orçamento. O n8n escreve **apenas** na
+aba `Dados` da cópia. As abas de apresentação (`Gravação` e `Locação`) leem dela por
+fórmula, e o PDF é exportado somente da aba correspondente ao tipo de serviço.
+
+Os valores de preço, os dados de contato da empresa e a identidade visual do modelo
+não são publicados neste repositório.
+
+## Visão geral
+
+| Aba | Função | Quem escreve |
+|---|---|---|
+| Gravação | Layout do orçamento de gravação (vira PDF) | Fórmulas, lendo `Dados` |
+| Locação | Layout do orçamento de locação (vira PDF) | Fórmulas, lendo `Dados` |
+| Preços | Tabela de preços da gravação | Manual |
+| Preços locação | Parâmetros da locação | Manual |
+| Serviços | Registro e status dos orçamentos (planilha mestre) | n8n |
+| Dados | Linha única com os dados do orçamento | n8n |
+
+As tabelas de `Preços` e `Preços locação` usam o recurso de Tabelas do Google Sheets.
+
+## Aba `Dados` (uma linha por cópia)
+
+Recebe a linha montada pelo n8n depois que a planilha modelo é copiada.
+
+| Coluna | Descrição |
+|---|---|
+| os | Número da ordem de serviço |
+| cliente | Nome do cliente |
+| referencia | Título do orçamento |
+| descricao | Descrição do serviço (objeto, conteúdo, local) |
+| quantidade | Quantidade de peças (gravação) |
+| valor_unitario | Valor por peça (gravação) |
+| periodo | Período do serviço (locação) |
+| dias | Dias de locação |
+| horas_dia | Horas de máquina por dia |
+| pecas_dia | Média de peças gravadas por dia |
+| distancia_km | Distância de ida, em km |
+| valor_deslocamento | Custo do deslocamento |
+| valor_diaria | Valor das diárias |
+| data_pdf | Data do orçamento |
+
+## Aba `Gravação` (apresentação)
+
+Cabeçalho com logotipo e dados da empresa, seguido de:
+
+- **Identificação:** O.S., cliente, data, validade da proposta e referência
+- **Escopo dos serviços:** item, serviço, informações adicionais, quantidade, valor unitário e valor
+- **Descontos:** linhas de condição de pagamento (à vista e faturamento em 30 dias), cada uma com percentual e valor resultante
+- **Condições comerciais:** texto fixo do modelo
+- **Fechamento:** responsáveis pelo orçamento e campo de assinatura de aprovação do cliente
+
+## Aba `Locação` (apresentação)
+
+Mesmo cabeçalho, descontos, condições e fechamento da aba Gravação, com estas diferenças:
+
+- **Identificação:** inclui o período do serviço
+- **Escopo dos serviços:** item, informações adicionais, dias, serviço, duração da diária, distância, valor do deslocamento, média de gravações por dia, valor da diária e valor total
+
+## Aba `Preços` (gravação)
+
+Tabela por faixa de quantidade, no formato "a partir de". O valor unitário da faixa
+vale para **todas** as peças do pedido.
+
+| Coluna | Descrição |
+|---|---|
+| a_partir_de | Quantidade mínima da faixa |
+| texto | Valor unitário para gravação de texto |
+| arte_normal | Valor unitário para arte de complexidade normal |
+| arte_complexa | Valor unitário para arte complexa |
+| arte_normal_texto | Valor unitário para arte normal com texto |
+| arte_complexa_texto | Valor unitário para arte complexa com texto |
+
+## Aba `Preços locação`
+
+| Coluna | Descrição |
+|---|---|
+| valor_hora | Valor cobrado por hora de máquina |
+| valor_km | Valor cobrado por km rodado |
+
+Fórmula: `dias × horas × valor_hora + (km_ida × 2 × dias × valor_km)`
+
+## Aba `Serviços` (planilha mestre)
+
+Uma linha por orçamento gerado. É o que permite aprovar ou cancelar um orçamento
+depois, por comando no WhatsApp, sem manter a execução do fluxo em espera.
+
+| Coluna | Descrição |
+|---|---|
+| OS | Número da ordem de serviço (chave de busca) |
+| CLIENTE | Nome do cliente |
+| TELEFONE | Telefone do cliente, usado para enviar o PDF aprovado |
+| DESCRIÇÃO | Descrição do serviço |
+| VALOR | Valor total do orçamento |
+| ID_PLANILHA | Id da cópia da planilha gerada no Drive |
+| ID_PDF | Id do PDF guardado no Drive |
+| STATUS | `Aguardando aprovação`, `Enviado` ou `Cancelado` |
+
+O `STATUS` também impede o reenvio: só orçamentos `Aguardando aprovação` podem ser
+aprovados ou cancelados.

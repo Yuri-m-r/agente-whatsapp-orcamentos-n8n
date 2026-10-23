@@ -4,7 +4,7 @@
     {
       "parameters": {
         "httpMethod": "POST",
-        "path": "whatsapp-laser-ba179854",
+        "path": "CAMINHO_DO_WEBHOOK",
         "authentication": "headerAuth",
         "options": {}
       },
@@ -19,7 +19,7 @@
       "webhookId": "9bddaba6-2107-439c-be0b-e973fc399af4",
       "credentials": {
         "httpHeaderAuth": {
-          "id": "0XEDo7iAV2610nnl",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Header Auth account"
         }
       }
@@ -115,7 +115,7 @@
       "name": "Google Gemini Chat Model",
       "credentials": {
         "googlePalmApi": {
-          "id": "mnWDQ7Bxak3YGJxF",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Gemini(PaLM) Api account"
         }
       }
@@ -211,7 +211,7 @@
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify({\n  number: $('Edit Fields').item.json.telefone,\n  mediatype: \"image\",\n  mimetype: \"image/png\",\n  caption: String($json.output.resposta).replace(/\\\\n/g, '\\n'),\n  media: \"https://kyqlowinjibcqznbhyhr.supabase.co/storage/v1/object/public/imagens-LaserBA/Catalogo%20de%20fontes.png\",\n  fileName: \"Catalogo_de_fontes.png\",\n  delay: 1200\n}) }}",
+        "jsonBody": "={{ JSON.stringify({\n  number: $('Edit Fields').item.json.telefone,\n  mediatype: \"image\",\n  mimetype: \"image/png\",\n  caption: String($json.output.resposta).replace(/\\\\n/g, '\\n'),\n  media: \"URL_DO_CATALOGO_REMOVIDA\",\n  fileName: \"Catalogo_de_fontes.png\",\n  delay: 1200\n}) }}",
         "options": {}
       },
       "type": "n8n-nodes-base.httpRequest",
@@ -328,7 +328,7 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -359,7 +359,7 @@
       "name": "Ler preços de gravação",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -368,7 +368,7 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -399,7 +399,7 @@
       "name": "Ler preços locação",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -483,7 +483,7 @@
         "operation": "copy",
         "fileId": {
           "__rl": true,
-          "value": "1snINp8H9_M39AxQEQXprjizjH93mhDa76_CPeV5_lNk",
+          "value": "ID_DO_MODELO",
           "mode": "id"
         },
         "name": "=Orçamento OS {{ $json.os }} - {{ $json.cliente }}",
@@ -495,7 +495,7 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "https://drive.google.com/drive/folders/14IFer6AABvufduWeesm0VfvpxAdURnka",
+          "value": "https://drive.google.com/drive/folders/ID_DA_PASTA",
           "mode": "url"
         },
         "options": {}
@@ -510,7 +510,7 @@
       "name": "Copy file",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "kl8Ydf8IcrqJWS51",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Drive account"
         }
       }
@@ -730,7 +730,7 @@
       "retryOnFail": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -766,7 +766,7 @@
       "name": "Postgres Chat Memory",
       "credentials": {
         "postgres": {
-          "id": "JMQnlGxg2LwLZ3BA",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Postgres account"
         }
       }
@@ -793,7 +793,7 @@
         },
         "folderId": {
           "__rl": true,
-          "value": "https://drive.google.com/drive/u/0/folders/1e36OW_YdMWsFSILBj5SrTOHzIyuIuyok",
+          "value": "https://drive.google.com/drive/u/0/folders/ID_DA_PASTA",
           "mode": "url"
         },
         "options": {}
@@ -808,7 +808,7 @@
       "name": "Upload PDF",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "kl8Ydf8IcrqJWS51",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Drive account"
         }
       }
@@ -950,7 +950,7 @@
       "parameters": {
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -983,7 +983,7 @@
       "alwaysOutputData": true,
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -1149,7 +1149,7 @@
         "operation": "update",
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -1271,7 +1271,7 @@
       "name": "Orçamento cancelado",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -1307,7 +1307,7 @@
         "operation": "update",
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -1429,7 +1429,7 @@
       "name": "Atualizar orçamento enviado",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -1454,7 +1454,7 @@
       "name": "Download orçamento PDF 1",
       "credentials": {
         "googleDriveOAuth2Api": {
-          "id": "kl8Ydf8IcrqJWS51",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Drive account"
         }
       }
@@ -1529,7 +1529,7 @@
       "name": "Salvar gid aba",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -1570,7 +1570,7 @@
       "name": "Resgatar PDF do sheets",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
@@ -1580,7 +1580,7 @@
         "operation": "append",
         "documentId": {
           "__rl": true,
-          "value": "1Y4qFjMwM_-Bcojjh_d5AJS2UAXyej_Cj51L6AEEx0PA",
+          "value": "ID_DA_PLANILHA",
           "mode": "list",
           "cachedResultName": "Orçamento padrão",
           "cachedResultUrl": "https://docs.google.com/spreadsheets/d/ID_DA_PLANILHA/edit?usp=drivesdk"
@@ -1694,7 +1694,7 @@
       "name": "Salvar OS",
       "credentials": {
         "googleSheetsOAuth2Api": {
-          "id": "z1JEXHTCh8C0tmiY",
+          "id": "ID_CREDENCIAL_REMOVIDO",
           "name": "Google Sheets account"
         }
       }
